@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 
 def train_step(optimizer: Optimizer, loss_fn, model: nn.Module, dataLoader: DataLoader):
     model.train()
-
     train_loss = 0
 
     for batch, (X, y) in enumerate(dataLoader):
@@ -26,7 +25,6 @@ def train_step(optimizer: Optimizer, loss_fn, model: nn.Module, dataLoader: Data
 
 def test_step(loss_fn, model: nn.Module, dataLoader: DataLoader):
     model.eval()
-
     loss = 0
     
     with inference_mode():

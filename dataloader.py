@@ -1,5 +1,5 @@
-import torchvision.datasets as datasets
 from torchvision.transforms import ToTensor
+import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 from PIL import Image
 
