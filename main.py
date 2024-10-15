@@ -1,13 +1,14 @@
+import matplotlib.pyplot as plt
 import torch.optim as optim
 import torch.nn as nn
 from tqdm import tqdm
-import torchvision
+# import torchvision
 import dataloader
 import train_test
 import torch
 
 
-EPOCHS: int = 1
+EPOCHS: int = 3
 LEARNING_RATE: float = 0.01
 
 class mnist_classifier(nn.Module):
@@ -24,32 +25,56 @@ class mnist_classifier(nn.Module):
     def forward(self, x):
         return self.Layer1(x)
 
+
 torch.manual_seed(42)
 model = mnist_classifier(28*28, 10, 10)
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-loss_fn = nn.CrossEntropyLoss()
 
 dataloaders = dataloader.get_data()
-
 train_dataloader = dataloaders[0]
 test_dataloader = dataloaders[1]
 class_to_idx = dataloaders[2]
 
+def train_main():
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    loss_fn = nn.CrossEntropyLoss()
+    
+    for epoch in tqdm(range(EPOCHS)):
+        train_loss = train_test.train_step(optimizer, loss_fn, model, train_dataloader)
+        test_loss = train_test.test_step(loss_fn, model, train_dataloader)
+    
+        print(train_loss)
+        print(test_loss)
 
-for epoch in tqdm(range(EPOCHS)):
-    train_loss = train_test.train_step(optimizer, loss_fn, model, train_dataloader)
-    test_loss = train_test.test_step(loss_fn, model, train_dataloader)
+    torch.save(model.state_dict(), "model.pth")
 
-    print(train_loss)
-    print(test_loss)
+def eval_model(dataloader, model: nn.Module):
+    img, label = next(iter(dataloader))
+    
+    model.load_state_dict(torch.load("model.pth", weights_only=True))
+    model.eval()
+
+    with torch.inference_mode():
+        accuracy = 0
+
+        pred = model(img)
+        formatted_preds = torch.argmax(pred, dim=1)
+        accuracy += (formatted_preds == label).sum().item()  
+
+        print(formatted_preds)
+        print(label)
+        print(len(dataloader.dataset))
+        print((accuracy / len(dataloader.dataset)) * 10000)
+        
+        mat_img = img[0].permute(1, 2, 0)
+        plt.imshow(mat_img)
+        plt.title(f"True label: {label[0]} | Preds: {formatted_preds[0]}")
+        plt.axis("off")
+        plt.show()
 
 
-for X, y in train_dataloader:
-    print(y)
-    print(class_to_idx)
-    pred = model(X)
-
-    print(torch.argmax(pred, dim=1))
-
-    break
+if __name__ == "__main__":
+    ## uncomment to train the model
+    # train_main()
+    ## uncomment to see the results of the model
+    eval_model(test_dataloader, model)
 
