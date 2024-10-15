@@ -65,11 +65,12 @@ def eval_model(dataloader, model: nn.Module):
         print(len(dataloader.dataset))
         print((accuracy / len(dataloader.dataset)) * 10000)
         
-        mat_img = img[0].permute(1, 2, 0)
-        plt.imshow(mat_img)
-        plt.title(f"True label: {label[0]} | Preds: {formatted_preds[0]}")
-        plt.axis("off")
-        plt.show()
+        for i in range(len(dataloader)):
+            mat_img = img[i].permute(1, 2, 0)
+            plt.imshow(mat_img, cmap="grey")
+            plt.title(f"True label: {label[i]} | Preds: {formatted_preds[i]}")
+            plt.axis("off")
+            plt.show()
 
 
 if __name__ == "__main__":
